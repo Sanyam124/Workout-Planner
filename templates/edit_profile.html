@@ -1,0 +1,78 @@
+{% extends "base.html" %} {% block title %}Edit Profile - Workout Planner{%
+endblock %} {% block head %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/edit_profile.css') }}"
+/>
+{% endblock %} {% block content %}
+<div class="container">
+  <div class="profile-card">
+    <h2><i class="bi bi-person-circle"></i> Edit Profile</h2>
+
+    <!-- Display success or error messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div class="message-container">
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %} {% endwith %}
+
+    <form
+      method="POST"
+      action="{{ url_for('edit_profile') }}"
+      class="edit-profile-form"
+    >
+      <div class="form-group">
+        <label for="email"><i class="bi bi-envelope"></i> Email:</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value="{{ user[1] }}"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password"><i class="bi bi-lock"></i> Password:</label>
+        <div class="password-wrapper">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Enter new password"
+            required
+          />
+          <i
+            class="bi bi-eye-slash toggle-password"
+            onclick="togglePassword()"
+          ></i>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-save">
+        <i class="bi bi-save"></i> Save Changes
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  function togglePassword() {
+    var passwordField = document.getElementById("password");
+    var toggleIcon = document.querySelector(".toggle-password");
+
+    if (passwordField.type === "password") {
+      passwordField.type = "text";
+      toggleIcon.classList.remove("bi-eye-slash");
+      toggleIcon.classList.add("bi-eye");
+    } else {
+      passwordField.type = "password";
+      toggleIcon.classList.remove("bi-eye");
+      toggleIcon.classList.add("bi-eye-slash");
+    }
+  }
+</script>
+{% endblock %}

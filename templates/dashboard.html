@@ -1,0 +1,27 @@
+{% extends "base.html" %} {% block title %}Dashboard{% endblock %} {% block head
+%}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/dashboard.css') }}"
+/>
+{% endblock %} {% block content %}
+<div class="section">
+  <h2>Your Workout Records</h2>
+  <table>
+    <tr>
+      <th>Workout Name</th>
+      <th>Duration</th>
+      <th>Date</th>
+      <th>Category</th>
+    </tr>
+    {% for workout in workouts %}
+    <tr>
+      <td>{{ workout[2] }}</td>
+      <td>{{ workout[3] }} min</td>
+      <td>{{ workout[4] }}</td>
+      <td>{{ workout[7] }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}
