@@ -55,6 +55,9 @@ def sign_up():
         username = request.form['username']
         email = request.form['email']
         password = request.form['password']
+        weight = request.form['weight']
+        height = request.form['height']
+        age = request.form['age']
 
         hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
@@ -66,8 +69,8 @@ def sign_up():
             flash("Username already exists! Choose a different one.", "error")
             return render_template('sign_up.html')
 
-        cursor.execute("INSERT INTO users (username, password, email) VALUES (%s, %s, %s)", 
-                       (username, hashed_password, email))
+        cursor.execute("INSERT INTO users (username, password, email, weight, height, age) VALUES (%s, %s, %s, %s, %s, %s)", 
+                       (username, hashed_password, email, weight, height, age))
         connection.commit()
         cursor.close()
         connection.close()
@@ -76,6 +79,7 @@ def sign_up():
         return redirect(url_for('login'))
 
     return render_template('sign_up.html')
+
 
 # Login Route
 @app.route('/login', methods=['GET', 'POST'])
@@ -120,7 +124,7 @@ def dashboard():
 
     connection = get_db_connection()
     cursor = connection.cursor()
-    cursor.execute("SELECT * FROM workouts WHERE username = %s", (session['username'],))
+    cursor.execute("SELECT workout_name, description, duration, intensity, date, category, calories_burned FROM workouts WHERE username = %s", (session['username'],))
     workouts = cursor.fetchall()
     cursor.close()
     connection.close()
@@ -138,17 +142,25 @@ def profile():
     cursor = connection.cursor()
     
     # Fetch user details from the database
-    cursor.execute("SELECT username, email, created_at FROM users WHERE username = %s", (username,))
+    cursor.execute("SELECT username, email, weight, height, age, created_at FROM users WHERE username = %s", (username,))
     user = cursor.fetchone()  # Fetch a single row as a tuple
     
     if user:
         user = {
             'username': user[0],
             'email': user[1],
-            'created_at': user[2].strftime('%Y-%m-%d %H:%M:%S') if user[2] else None
+            'weight': user[2],
+            'height': user[3],
+            'age': user[4],
+            'created_at': user[5].strftime('%Y-%m-%d %H:%M:%S') if user[5] else None
         }
 
+    cursor.close()
+    connection.close()
+
     return render_template('profile.html', user=user)
+
+
 
 # Edit Profile Route
 @app.route('/edit_profile', methods=['GET', 'POST'])
@@ -163,7 +175,7 @@ def edit_profile():
     cursor = connection.cursor()
 
     # Fetch user details
-    cursor.execute("SELECT username, email FROM users WHERE username = %s", (username,))
+    cursor.execute("SELECT username, email, weight, height, age FROM users WHERE username = %s", (username,))
     user = cursor.fetchone()
 
     if not user:
@@ -172,6 +184,9 @@ def edit_profile():
 
     if request.method == 'POST':
         new_email = request.form['email']
+        new_weight = request.form['weight']
+        new_height = request.form['height']
+        new_age = request.form['age']
         new_password = request.form['password']
 
         # Hash new password with bcrypt
@@ -179,8 +194,8 @@ def edit_profile():
 
         # Update user info
         cursor.execute(
-            "UPDATE users SET email = %s, password = %s WHERE username = %s",
-            (new_email, new_password_hashed, username)
+            "UPDATE users SET email = %s, weight = %s, height = %s, age = %s, password = %s WHERE username = %s",
+            (new_email, new_weight, new_height, new_age, new_password_hashed, username)
         )
         connection.commit()
 
@@ -193,6 +208,16 @@ def edit_profile():
 
     return render_template('edit_profile.html', user=user)
 
+
+# MET values for different intensities or categories
+MET_VALUES = {
+    'low': 3,        # Light workout (walking, light stretching)
+    'medium': 6,     # Moderate workout (jogging, swimming)
+    'high': 10     # Vigorous workout (running, cycling fast)
+}
+
+
+# Add Workout Route
 # Add Workout Route
 @app.route('/add_workout', methods=['GET', 'POST'])
 def add_workout():
@@ -216,25 +241,47 @@ def add_workout():
             flash("Invalid date format.", "error")
             return redirect(url_for('add_workout'))
 
+        # Convert duration to a number (float or int)
+        try:
+            duration = float(duration)  # Convert the string to a float (could also use int)
+        except ValueError:
+            flash("Invalid duration value. Please enter a valid number.", "error")
+            return redirect(url_for('add_workout'))
+
+        # Convert duration to hours (assuming duration is in minutes)
+        duration_in_hours = duration / 60
+
+        # Calculate calories burned based on intensity and duration
+        if intensity.lower() not in MET_VALUES:
+            flash("Invalid intensity value!", "error")
+            return redirect(url_for('add_workout'))
+
+        # Let's assume a user weight (for simplicity, you can store it in the user's profile or ask for it)
+        user_weight_kg = 70  # User's weight in kg, replace with actual value from the profile
+
+        met_value = MET_VALUES[intensity.lower()]
+        calories_burned = met_value * user_weight_kg * duration_in_hours
+
         # Database connection
         connection = get_db_connection()
         cursor = connection.cursor()
-        
+
         # Insert workout data into the database, including the date
         query = """
-            INSERT INTO workouts (username, workout_name, description, duration, intensity, date,category)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO workouts (username, workout_name, description, duration, intensity, date, category, calories_burned)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
-        values = (username, workout_name, description, duration, intensity, date,category)
+        values = (username, workout_name, description, duration, intensity, date, category, calories_burned)
         cursor.execute(query, values)
         connection.commit()
-        
+
         flash("Workout added successfully!", "success")
         return redirect(url_for('dashboard'))  # Redirect to dashboard or another page
     
     from datetime import date
     today = date.today()
     return render_template('add_workout.html', today=today)
+
 
 @app.route('/about')
 def about():
