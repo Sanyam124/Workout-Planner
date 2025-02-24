@@ -129,7 +129,11 @@ def dashboard():
     cursor.close()
     connection.close()
 
-    return render_template('dashboard.html', workouts=workouts)
+    # Convert data into lists for JavaScript
+    dates = [workout[4].strftime('%Y-%m-%d') for workout in workouts]  # Extract dates
+    calories = [workout[6] for workout in workouts]  # Extract calorie values
+
+    return render_template('dashboard.html', workouts=workouts,dates=dates,calories=calories)
 
 # Profile Route
 @app.route('/profile', methods=['GET', 'POST'])

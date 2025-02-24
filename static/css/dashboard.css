@@ -90,6 +90,46 @@ body {
     width: 30%; /* Adjust width of Date column */
   }
   
+  /* Chart Container */
+.chart-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  text-align: center;
+}
+
+/* Title Styling */
+.chart-container h1 {
+  font-size: 1.8rem;
+  color: #007bff;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 0.5rem;
+}
+
+/* Chart Canvas */
+canvas#caloriesChart {
+  width: 100% !important;
+  height: 400px !important;
+  max-height: 400px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .chart-container {
+      width: 90%;
+      padding: 1rem;
+  }
+  canvas#caloriesChart {
+      height: 300px !important;
+  }
+}
+
+
   /* Responsive design for smaller screens */
   @media (max-width: 600px) {
     h2 {
