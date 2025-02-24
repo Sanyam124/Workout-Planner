@@ -1,65 +1,111 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // Get data from hidden divs
-  let rawDates = JSON.parse(document.getElementById("chart-dates").textContent);
-  let rawCalories = JSON.parse(
+  // --- Calories Burned Line Chart ---
+  const ctxCalories = document.getElementById("caloriesChart").getContext("2d");
+  const dates = JSON.parse(document.getElementById("chart-dates").textContent);
+  const calories = JSON.parse(
     document.getElementById("chart-calories").textContent
   );
 
-  // Object to store summed calories per date
-  let calorieData = {};
-
-  // Sum calories for each unique date
-  rawDates.forEach((date, index) => {
-    if (calorieData[date]) {
-      calorieData[date] += rawCalories[index]; // Add calories if date exists
-    } else {
-      calorieData[date] = rawCalories[index]; // Initialize with first value
-    }
-  });
-
-  // Convert to array and sort by date
-  let sortedData = Object.entries(calorieData).sort(([dateA], [dateB]) => {
-    return new Date(dateA) - new Date(dateB); // Sort by date
-  });
-
-  // Extract sorted dates and calorie values
-  let sortedDates = sortedData.map((entry) => entry[0]);
-  let sortedCalories = sortedData.map((entry) => entry[1]);
-
-  // Chart.js Configuration
-  const ctx = document.getElementById("caloriesChart").getContext("2d");
-  new Chart(ctx, {
+  // Group data by date (if necessary, already sorted in Python)
+  new Chart(ctxCalories, {
     type: "line",
     data: {
-      labels: sortedDates,
+      labels: dates,
       datasets: [
         {
           label: "Calories Burned",
-          data: sortedCalories,
-          backgroundColor: "rgba(54, 162, 235, 0.2)",
-          borderColor: "rgba(54, 162, 235, 1)",
+          data: calories,
+          borderColor: "rgb(255, 99, 132)",
+          backgroundColor: "rgba(255, 99, 132, 0.2)",
           borderWidth: 2,
-          pointBackgroundColor: "rgba(54, 162, 235, 1)",
-          pointRadius: 5,
-          tension: 0.2, // Smooth curves
+          fill: true,
+          tension: 0.2,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { title: { display: true, text: "Date" } },
+        y: {
+          title: { display: true, text: "Calories Burned" },
+          beginAtZero: true,
+        },
+      },
+    },
+  });
+
+  // --- Workout Categories Pie Chart ---
+  const ctxCategories = document
+    .getElementById("categoriesChart")
+    .getContext("2d");
+  const categories = JSON.parse(
+    document.getElementById("chart-categories").textContent
+  );
+  const categoryCounts = JSON.parse(
+    document.getElementById("chart-cat-counts").textContent
+  );
+
+  new Chart(ctxCategories, {
+    type: "pie",
+    data: {
+      labels: categories,
+      datasets: [
+        {
+          label: "Workout Categories",
+          data: categoryCounts,
+          backgroundColor: [
+            "rgba(255, 99, 132, 0.6)",
+            "rgba(54, 162, 235, 0.6)",
+            "rgba(255, 206, 86, 0.6)",
+            "rgba(75, 192, 192, 0.6)",
+            "rgba(153, 102, 255, 0.6)",
+            "rgba(255, 159, 64, 0.6)",
+          ],
+          borderWidth: 1,
         },
       ],
     },
     options: {
       responsive: true,
       plugins: {
-        legend: {
-          display: true,
-          position: "top",
-        },
+        legend: { position: "top" },
       },
-      scales: {
-        x: {
-          title: { display: true, text: "Date" },
-          ticks: { autoSkip: true, maxTicksLimit: 10 },
+    },
+  });
+
+  // --- Average Workout Duration Trend Line Chart ---
+  const ctxAvgDuration = document
+    .getElementById("avgDurationChart")
+    .getContext("2d");
+  const avgDates = JSON.parse(
+    document.getElementById("chart-avg-dates").textContent
+  );
+  const avgDurations = JSON.parse(
+    document.getElementById("chart-avg-durations").textContent
+  );
+
+  new Chart(ctxAvgDuration, {
+    type: "line",
+    data: {
+      labels: avgDates,
+      datasets: [
+        {
+          label: "Average Duration (minutes)",
+          data: avgDurations,
+          borderColor: "rgba(75, 192, 192, 1)",
+          backgroundColor: "rgba(75, 192, 192, 0.2)",
+          borderWidth: 2,
+          tension: 0.2,
         },
+      ],
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { title: { display: true, text: "Date" } },
         y: {
-          title: { display: true, text: "Calories Burned" },
+          title: { display: true, text: "Duration (minutes)" },
           beginAtZero: true,
         },
       },

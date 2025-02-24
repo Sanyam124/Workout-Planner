@@ -124,16 +124,29 @@ def dashboard():
 
     connection = get_db_connection()
     cursor = connection.cursor()
-    cursor.execute("SELECT workout_name, description, duration, intensity, date, category, calories_burned FROM workouts WHERE username = %s", (session['username'],))
+
+    # Get all workouts for the table display
+    cursor.execute(
+        "SELECT workout_name, description, duration, intensity, date, category, calories_burned FROM workouts WHERE username = %s",
+        (session['username'],)
+    )
     workouts = cursor.fetchall()
+
+    # Aggregate calories burned per day (group by date) and sort in ascending order
+    cursor.execute(
+        "SELECT date, SUM(calories_burned) as total_calories FROM workouts WHERE username = %s GROUP BY date ORDER BY date ASC",
+        (session['username'],)
+    )
+    aggregated = cursor.fetchall()
     cursor.close()
     connection.close()
 
-    # Convert data into lists for JavaScript
-    dates = [workout[4].strftime('%Y-%m-%d') for workout in workouts]  # Extract dates
-    calories = [workout[6] for workout in workouts]  # Extract calorie values
+    # Convert aggregated results to lists for the chart
+    chart_dates = [row[0].strftime('%Y-%m-%d') for row in aggregated]
+    chart_calories = [row[1] for row in aggregated]
 
-    return render_template('dashboard.html', workouts=workouts,dates=dates,calories=calories)
+    return render_template('dashboard.html', workouts=workouts, dates=chart_dates, calories=chart_calories)
+
 
 # Profile Route
 @app.route('/profile', methods=['GET', 'POST'])
