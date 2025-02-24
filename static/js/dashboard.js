@@ -1,12 +1,11 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // --- Calories Burned Line Chart ---
-  const ctxCalories = document.getElementById("caloriesChart").getContext("2d");
-  const dates = JSON.parse(document.getElementById("chart-dates").textContent);
-  const calories = JSON.parse(
+  // 1. Calories Burned Chart
+  var ctxCalories = document.getElementById("caloriesChart").getContext("2d");
+  var dates = JSON.parse(document.getElementById("chart-dates").textContent);
+  var calories = JSON.parse(
     document.getElementById("chart-calories").textContent
   );
 
-  // Group data by date (if necessary, already sorted in Python)
   new Chart(ctxCalories, {
     type: "line",
     data: {
@@ -19,7 +18,6 @@ document.addEventListener("DOMContentLoaded", function () {
           backgroundColor: "rgba(255, 99, 132, 0.2)",
           borderWidth: 2,
           fill: true,
-          tension: 0.2,
         },
       ],
     },
@@ -35,32 +33,28 @@ document.addEventListener("DOMContentLoaded", function () {
     },
   });
 
-  // --- Workout Categories Pie Chart ---
-  const ctxCategories = document
-    .getElementById("categoriesChart")
-    .getContext("2d");
-  const categories = JSON.parse(
-    document.getElementById("chart-categories").textContent
+  // 2. Workout Categories Distribution (Pie Chart)
+  var ctxCategory = document.getElementById("categoryChart").getContext("2d");
+  var categoryLabels = JSON.parse(
+    document.getElementById("chart-category-labels").textContent
   );
-  const categoryCounts = JSON.parse(
-    document.getElementById("chart-cat-counts").textContent
+  var categoryCounts = JSON.parse(
+    document.getElementById("chart-category-counts").textContent
   );
 
-  new Chart(ctxCategories, {
+  new Chart(ctxCategory, {
     type: "pie",
     data: {
-      labels: categories,
+      labels: categoryLabels,
       datasets: [
         {
           label: "Workout Categories",
           data: categoryCounts,
           backgroundColor: [
-            "rgba(255, 99, 132, 0.6)",
-            "rgba(54, 162, 235, 0.6)",
-            "rgba(255, 206, 86, 0.6)",
             "rgba(75, 192, 192, 0.6)",
-            "rgba(153, 102, 255, 0.6)",
             "rgba(255, 159, 64, 0.6)",
+            "rgba(153, 102, 255, 0.6)",
+            "rgba(255, 205, 86, 0.6)",
           ],
           borderWidth: 1,
         },
@@ -68,35 +62,30 @@ document.addEventListener("DOMContentLoaded", function () {
     },
     options: {
       responsive: true,
-      plugins: {
-        legend: { position: "top" },
-      },
     },
   });
 
-  // --- Average Workout Duration Trend Line Chart ---
-  const ctxAvgDuration = document
-    .getElementById("avgDurationChart")
-    .getContext("2d");
-  const avgDates = JSON.parse(
-    document.getElementById("chart-avg-dates").textContent
+  // 3. Average Workout Duration per Day (Line Chart)
+  var ctxDuration = document.getElementById("durationChart").getContext("2d");
+  var datesDuration = JSON.parse(
+    document.getElementById("chart-dates-duration").textContent
   );
-  const avgDurations = JSON.parse(
-    document.getElementById("chart-avg-durations").textContent
+  var avgDuration = JSON.parse(
+    document.getElementById("chart-avg-duration").textContent
   );
 
-  new Chart(ctxAvgDuration, {
+  new Chart(ctxDuration, {
     type: "line",
     data: {
-      labels: avgDates,
+      labels: datesDuration,
       datasets: [
         {
-          label: "Average Duration (minutes)",
-          data: avgDurations,
-          borderColor: "rgba(75, 192, 192, 1)",
-          backgroundColor: "rgba(75, 192, 192, 0.2)",
+          label: "Avg Duration (min)",
+          data: avgDuration,
+          borderColor: "rgb(54, 162, 235)",
+          backgroundColor: "rgba(54, 162, 235, 0.2)",
           borderWidth: 2,
-          tension: 0.2,
+          fill: true,
         },
       ],
     },
@@ -105,8 +94,45 @@ document.addEventListener("DOMContentLoaded", function () {
       scales: {
         x: { title: { display: true, text: "Date" } },
         y: {
-          title: { display: true, text: "Duration (minutes)" },
+          title: { display: true, text: "Duration (min)" },
           beginAtZero: true,
+        },
+      },
+    },
+  });
+
+  // 4. Average Workout Intensity per Day (Line Chart)
+  var ctxIntensity = document.getElementById("intensityChart").getContext("2d");
+  var datesIntensity = JSON.parse(
+    document.getElementById("chart-dates-intensity").textContent
+  );
+  var avgIntensity = JSON.parse(
+    document.getElementById("chart-avg-intensity").textContent
+  );
+
+  new Chart(ctxIntensity, {
+    type: "line",
+    data: {
+      labels: datesIntensity,
+      datasets: [
+        {
+          label: "Avg Intensity (1:Low, 2:Med, 3:High)",
+          data: avgIntensity,
+          borderColor: "rgb(255, 206, 86)",
+          backgroundColor: "rgba(255, 206, 86, 0.2)",
+          borderWidth: 2,
+          fill: true,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { title: { display: true, text: "Date" } },
+        y: {
+          title: { display: true, text: "Intensity Level" },
+          beginAtZero: true,
+          max: 3,
         },
       },
     },

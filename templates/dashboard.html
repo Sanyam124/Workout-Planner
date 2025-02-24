@@ -5,7 +5,6 @@
   href="{{ url_for('static', filename='css/dashboard.css') }}"
 />
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Load Chart.js -->
 {% endblock %} {% block content %}
 <div class="section">
   <h2>Your Workout Records</h2>
@@ -32,17 +31,52 @@
     {% endfor %}
   </table>
 </div>
-<div class="chart-container">
-  <h1>Your Workout Progress</h1>
 
-  <!-- Hidden elements to store JSON data -->
+<!-- Chart Section for Calories Burned -->
+<div class="chart-container">
+  <h1>Calories Burned Per Day</h1>
+  <!-- Hidden data -->
   <div id="chart-dates" style="display: none">{{ dates | tojson }}</div>
   <div id="chart-calories" style="display: none">{{ calories | tojson }}</div>
-
-  <!-- Canvas for the chart -->
   <canvas id="caloriesChart"></canvas>
 </div>
 
-<!-- Include external JavaScript file -->
+<!-- Chart Section for Workout Categories -->
+<div class="chart-container">
+  <h1>Workout Categories Distribution</h1>
+  <div id="chart-category-labels" style="display: none">
+    {{ category_labels | tojson }}
+  </div>
+  <div id="chart-category-counts" style="display: none">
+    {{ category_counts | tojson }}
+  </div>
+  <canvas id="categoryChart"></canvas>
+</div>
+
+<!-- Chart Section for Average Duration -->
+<div class="chart-container">
+  <h1>Average Workout Duration Per Day</h1>
+  <div id="chart-dates-duration" style="display: none">
+    {{ chart_dates_duration | tojson }}
+  </div>
+  <div id="chart-avg-duration" style="display: none">
+    {{ chart_avg_duration | tojson }}
+  </div>
+  <canvas id="durationChart"></canvas>
+</div>
+
+<!-- Chart Section for Average Intensity -->
+<div class="chart-container">
+  <h1>Average Workout Intensity Per Day</h1>
+  <div id="chart-dates-intensity" style="display: none">
+    {{ chart_dates_intensity | tojson }}
+  </div>
+  <div id="chart-avg-intensity" style="display: none">
+    {{ chart_avg_intensity | tojson }}
+  </div>
+  <canvas id="intensityChart"></canvas>
+</div>
+
+<!-- Include external JavaScript file for dashboard charts -->
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}

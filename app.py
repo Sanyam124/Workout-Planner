@@ -125,27 +125,90 @@ def dashboard():
     connection = get_db_connection()
     cursor = connection.cursor()
 
-    # Get all workouts for the table display
-    cursor.execute(
-        "SELECT workout_name, description, duration, intensity, date, category, calories_burned FROM workouts WHERE username = %s",
-        (session['username'],)
-    )
-    workouts = cursor.fetchall()
+    username = session['username']
 
-    # Aggregate calories burned per day (group by date) and sort in ascending order
-    cursor.execute(
-        "SELECT date, SUM(calories_burned) as total_calories FROM workouts WHERE username = %s GROUP BY date ORDER BY date ASC",
-        (session['username'],)
-    )
-    aggregated = cursor.fetchall()
+    # 1. Calories burned aggregated by date
+    cursor.execute("""
+        SELECT date, SUM(calories_burned) as total_calories 
+        FROM workouts 
+        WHERE username = %s 
+        GROUP BY date 
+        ORDER BY date ASC
+    """, (username,))
+    calories_data = cursor.fetchall()
+    chart_dates_calories = [row[0].strftime('%Y-%m-%d') for row in calories_data]
+    chart_calories = [row[1] for row in calories_data]
+
+    # 2. Workout categories distribution
+    cursor.execute("""
+        SELECT category, COUNT(*) as count 
+        FROM workouts 
+        WHERE username = %s 
+        GROUP BY category 
+        ORDER BY count DESC
+    """, (username,))
+    category_data = cursor.fetchall()
+    category_labels = [row[0] for row in category_data]
+    category_counts = [row[1] for row in category_data]
+
+    # 3. Average workout duration per day
+    cursor.execute("""
+        SELECT date, AVG(duration) as avg_duration
+        FROM workouts
+        WHERE username = %s
+        GROUP BY date
+        ORDER BY date ASC
+    """, (username,))
+    duration_data = cursor.fetchall()
+    chart_dates_duration = [row[0].strftime('%Y-%m-%d') for row in duration_data]
+    chart_avg_duration = [row[1] for row in duration_data]
+
+    # 4. Average workout intensity per day (mapping: low=1, medium=2, high=3)
+    cursor.execute("""
+        SELECT date, AVG(
+            CASE 
+                WHEN LOWER(intensity) = 'low' THEN 1
+                WHEN LOWER(intensity) = 'medium' THEN 2
+                WHEN LOWER(intensity) = 'high' THEN 3
+                ELSE 0
+            END
+        ) as avg_intensity
+        FROM workouts
+        WHERE username = %s
+        GROUP BY date
+        ORDER BY date ASC
+    """, (username,))
+    intensity_data = cursor.fetchall()
+    chart_dates_intensity = [row[0].strftime('%Y-%m-%d') for row in intensity_data]
+    chart_avg_intensity = [row[1] for row in intensity_data]
+
+    # For table display: all workouts
+    cursor.execute("""
+        SELECT workout_name, description, duration, intensity, date, category, calories_burned 
+        FROM workouts 
+        WHERE username = %s
+    """, (username,))
+    workouts = cursor.fetchall()
     cursor.close()
     connection.close()
 
-    # Convert aggregated results to lists for the chart
-    chart_dates = [row[0].strftime('%Y-%m-%d') for row in aggregated]
-    chart_calories = [row[1] for row in aggregated]
+    return render_template(
+        'dashboard.html',
+        workouts=workouts,
+        # For calories burned chart
+        dates=chart_dates_calories,
+        calories=chart_calories,
+        # For category chart (pie chart)
+        category_labels=category_labels,
+        category_counts=category_counts,
+        # For average duration chart
+        chart_dates_duration=chart_dates_duration,
+        chart_avg_duration=chart_avg_duration,
+        # For average intensity chart
+        chart_dates_intensity=chart_dates_intensity,
+        chart_avg_intensity=chart_avg_intensity
+    )
 
-    return render_template('dashboard.html', workouts=workouts, dates=chart_dates, calories=chart_calories)
 
 
 # Profile Route
